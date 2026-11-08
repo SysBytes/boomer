@@ -1,0 +1,53 @@
+Actúa como un Arquitecto de Sistemas Senior y experto en modelado de procesos.
+
+Tu tarea es diseñar la lógica y estructura para un diagrama de flujo detallado de un Sistema de solicitud de materiales.
+
+Contexto del Sistema:
+
+Objetivo Principal: Permitir a los técnicos iniciar sesión en un sistema para la solicitud de materiales necesarios a utilizar en una obra, el técnico debe preseleccionar la obra en la que está trabajando antes de solicitar materiales. Esta solicitud debe ser aprobada por un Ingeniero residente y redirigida al departamento de compras para su cotización con los proveedores. Las obras deben estar pre registradas y asignadas a los ténicos, los materiales deben estar asignados a la obra y los mismos tiene que estar pre registrados por un usuario encargado.
+
+Actores/Usuarios: Técnico, Ingeniero, Departmento de compras, administrador del sistema.
+
+Evento de Inicio: El técnico inicia sesión, hace clic en las obras asignadas y hace la solicitud de los materiales.
+
+Evento de Fin: El departamento de compra recibe el pedido del proveedor y marca la solicitud del ténico como adquirida.
+
+Requisitos del Flujo:
+
+El diagrama debe incluir el "camino feliz" (el proceso ideal sin errores).
+
+Debe incluir puntos de decisión (rombos) críticos (ej. ¿Contraseña válida? ¿Hay stock? ¿Saldo suficiente?).
+
+Debe contemplar al menos 2 flujos alternativos o de error (ej. ¿Qué pasa si falla la validación? ¿Qué pasa si el servidor no responde?).
+
+Formato de Salida Requerido:
+Por favor, genera el código en sintaxis Mermaid.js. Asegúrate de usar formas estándar: óvalos para inicio/fin, rectángulos para procesos y rombos para decisiones.
+
+
+
+//HOJA DE RUTA
+
+Actúa como un Arquitecto de Sistemas Senior y experto en modelado de procesos.
+
+Tu tarea es diseñar la lógica y estructura para un diagrama de flujo detallado de un Sistema de Control de Horas de los técnicos en obra.
+
+Contexto del Sistema:
+
+Objetivo Principal: Permitir que un técnico inicie sesión en un sistema para registrar su entrada y salida de una obra, el técnico debe preseleccionar la obra en la que está trabajando antes de registrar su entrada y salida. La entrada y salida se debe guardar con una foto que evidencie la presencia del técnico en la obra. Esta información queda guardada en una base de datos para el control de horas de los técnicos.
+
+Actores/Usuarios: Técnico
+
+Evento de Inicio: El técnico inicia sesión, hace clic en la obra a comenzar a trabajar y registra la hora de entrada con una imagen de la obra.
+
+Evento de Fin: El técnico registra la hora de salida con una imagen de la obra.
+
+Requisitos del Flujo:
+
+El diagrama debe incluir el "camino feliz" (el proceso ideal sin errores).
+
+Debe incluir puntos de decisión (rombos) críticos (ej. ¿Contraseña válida? ¿Hay stock? ¿Saldo suficiente?).
+
+Debe contemplar al menos 2 flujos alternativos o de error (ej. ¿Qué pasa si falla la validación? ¿Qué pasa si el servidor no responde?).
+
+Formato de Salida Requerido:
+Por favor, genera el código en sintaxis [ELIGE UNO: Mermaid.js / PlantUML / Descripción de Texto Estructurado / ASCII]. Asegúrate de usar formas estándar: óvalos para inicio/fin, rectángulos para procesos y rombos para decisiones.

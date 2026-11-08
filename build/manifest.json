@@ -1,0 +1,71 @@
+{
+  "_bootstrap.esm-CjE0EDlS.js": {
+    "file": "assets/bootstrap.esm-CjE0EDlS.js",
+    "name": "bootstrap.esm"
+  },
+  "resources/fonts/fontawesome/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-BfBXV7Mm.woff2",
+    "src": "resources/fonts/fontawesome/fa-brands-400.woff2"
+  },
+  "resources/fonts/fontawesome/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-BVHPE7da.woff2",
+    "src": "resources/fonts/fontawesome/fa-regular-400.woff2"
+  },
+  "resources/fonts/fontawesome/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-8GirhLYJ.woff2",
+    "src": "resources/fonts/fontawesome/fa-solid-900.woff2"
+  },
+  "resources/fonts/simple-line-icons/Simple-Line-Icons.eot": {
+    "file": "assets/Simple-Line-Icons-CKKl-dGR.eot",
+    "src": "resources/fonts/simple-line-icons/Simple-Line-Icons.eot"
+  },
+  "resources/fonts/simple-line-icons/Simple-Line-Icons.svg": {
+    "file": "assets/Simple-Line-Icons-BTnVYXrC.svg",
+    "src": "resources/fonts/simple-line-icons/Simple-Line-Icons.svg"
+  },
+  "resources/fonts/simple-line-icons/Simple-Line-Icons.ttf": {
+    "file": "assets/Simple-Line-Icons-mVuQrdSX.ttf",
+    "src": "resources/fonts/simple-line-icons/Simple-Line-Icons.ttf"
+  },
+  "resources/fonts/simple-line-icons/Simple-Line-Icons.woff": {
+    "file": "assets/Simple-Line-Icons-BAgH0-Pt.woff",
+    "src": "resources/fonts/simple-line-icons/Simple-Line-Icons.woff"
+  },
+  "resources/fonts/simple-line-icons/Simple-Line-Icons.woff2": {
+    "file": "assets/Simple-Line-Icons-D0KobG-u.woff2",
+    "src": "resources/fonts/simple-line-icons/Simple-Line-Icons.woff2"
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-dSQq83D4.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap.esm-CjE0EDlS.js"
+    ]
+  },
+  "resources/js/codebase/app.js": {
+    "file": "assets/app-B33Xm0BV.js",
+    "name": "app",
+    "src": "resources/js/codebase/app.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap.esm-CjE0EDlS.js"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-Dccke9xE.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true
+  },
+  "resources/sass/main.scss": {
+    "file": "assets/main-CmzneyBr.css",
+    "src": "resources/sass/main.scss",
+    "isEntry": true
+  },
+  "resources/sass/main/frontend.scss": {
+    "file": "assets/frontend-DZ-UVH1h.css",
+    "src": "resources/sass/main/frontend.scss",
+    "isEntry": true
+  }
+}

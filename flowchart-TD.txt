@@ -1,0 +1,91 @@
+flowchart TD
+    %% Definición de Estilos
+    classDef actor fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef system fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,shape:diamond;
+    classDef endNode fill:#ffebee,stroke:#c62828,stroke-width:2px,shape:unavailable;
+    classDef term fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,shape:oval;
+
+    %% Nodos de Inicio y Fin Globales
+    Start([Inicio: Técnico accede al portal]) --> Login
+    FinalNode([Fin: Material Adquirido y Disponible]):::term
+
+    %% Carril del Técnico
+    subgraph Tech_User [Actor: Técnico]
+        direction TB
+        Login[Ingresar Credenciales]:::actor
+        SelectProject[Seleccionar Obra Asignada]:::actor
+        SelectMaterial[Seleccionar Materiales del Catálogo]:::actor
+        InputQty[Ingresar Cantidad y Justificación]:::actor
+        SubmitReq[Enviar Solicitud]:::actor
+        ReviewCorrection[Revisar Rechazo/Corregir]:::actor
+    end
+
+    %% Carril del Sistema (Backend/Lógica)
+    subgraph System_Logic [Sistema / Base de Datos]
+        direction TB
+        AuthCheck{¿Credenciales Válidas?}:::decision
+        FetchProjects[[Cargar Obras Asignadas al Técnico]]:::system
+        CheckMaterials[[Cargar Materiales Autorizados por Obra]]:::system
+        ValidateStock{¿Material en Lista Maestra?}:::decision
+        NotifyEng[Notificar a Ingeniero Residente]:::system
+        NotifyRej[Notificar Rechazo al Técnico]:::system
+        NotifyPurch[Notificar a Compras]:::system
+        UpdateStatus[Actualizar Estado: ADQUIRIDO]:::system
+    end
+
+    %% Carril del Ingeniero
+    subgraph Engineer_User [Actor: Ingeniero Residente]
+        direction TB
+        ReviewReq[Revisar Solicitud Pendiente]:::actor
+        ApproveCheck{¿Aprueba Solicitud?}:::decision
+    end
+
+    %% Carril de Compras
+    subgraph Purchasing_Dept [Actor: Dept. Compras]
+        direction TB
+        ReceiveOrder[Recibir Solicitud Aprobada]:::actor
+        QuoteProcess[Cotizar con Proveedores]:::actor
+        PlaceOrder[Realizar Pedido / Compra]:::actor
+        MarkAcquired[Marcar como Recibido/Adquirido]:::actor
+    end
+
+    %% Relaciones y Flujo
+
+    %% 1. Autenticación
+    Login --> AuthCheck
+    AuthCheck -- No --> ErrorLogin[Mostrar Error]:::endNode
+    ErrorLogin -.-> Login
+    AuthCheck -- Sí --> FetchProjects
+
+    %% 2. Selección de Obra
+    FetchProjects --> SelectProject
+    SelectProject --> CheckMaterials
+    
+    %% 3. Selección de Materiales (Validación de asignación previa)
+    CheckMaterials --> SelectMaterial
+    SelectMaterial --> ValidateStock
+    ValidateStock -- No (Error de Configuración) --> ErrorConfig[Error: Material no asignado a Obra]:::endNode
+    ValidateStock -- Sí --> InputQty
+    InputQty --> SubmitReq
+
+    %% 4. Proceso de Aprobación
+    SubmitReq --> NotifyEng
+    NotifyEng --> ReviewReq
+    ReviewReq --> ApproveCheck
+    
+    %% Flujo Alternativo: Rechazo
+    ApproveCheck -- No (Rechazado) --> NotifyRej
+    NotifyRej --> ReviewCorrection
+    ReviewCorrection --> SelectMaterial
+    
+    %% Camino Feliz: Aprobación
+    ApproveCheck -- Sí (Aprobado) --> NotifyPurch
+    NotifyPurch --> ReceiveOrder
+    
+    %% 5. Proceso de Compras
+    ReceiveOrder --> QuoteProcess
+    QuoteProcess --> PlaceOrder
+    PlaceOrder --> MarkAcquired
+    MarkAcquired --> UpdateStatus
+    UpdateStatus --> FinalNode

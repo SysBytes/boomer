@@ -1,0 +1,32 @@
+@extends('layouts.backoffice')
+
+@section('js_after')
+    <!-- Page JS Plugins -->
+    <script src="{{ asset('js/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/jquery-validation/additional-methods.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/jquery-validation/localization/messages_es.js') }}"></script>
+
+    <!-- Page JS Code -->
+    <script src="{{ asset('js/pages/be_forms_validation.js') }}"></script>
+@endsection
+
+@section('content')
+<div class="content">
+    <h2 class="content-heading">Mi Perfil</h2>
+    <div class="block">
+        <div class="block-header block-header-default">
+            <h3 class="block-title">Editar Información</h3>
+        </div>
+        <div class="block-content">
+            <form action="{{ route('profile.update') }}" method="POST" class="js-validation-bootstrap">
+                <div class="row justify-content-center pb-5 pt-2 push">
+                    <div class="col-xl-8">
+                        {{ method_field('PUT') }}
+                        @include('backoffice.profile.form')
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@stop

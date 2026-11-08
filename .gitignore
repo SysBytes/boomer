@@ -1,0 +1,38 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Environment
+.env
+.env.*
+!.env.example
+Application/.env
+Application/.env.*
+!Application/.env.example
+
+# Dependencies
+/vendor/
+Application/vendor/
+/node_modules/
+Application/node_modules/
+
+# Logs and Caches
+*.log
+Application/storage/logs/*.log
+Application/storage/framework/cache/data/*
+Application/storage/framework/sessions/*
+Application/storage/framework/views/*
+Application/bootstrap/cache/*.php
+!Application/bootstrap/cache/.gitignore
+
+# Storage / Uploads
+storage
+Application/public/storage
+Application/storage/app/backups/*
+Application/storage/app/public/*
+!Application/storage/app/public/.gitignore

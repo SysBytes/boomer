@@ -1,0 +1,154 @@
+/*
+ *  Document   : be_tables_datatables.js
+ *  Author     : pixelcave
+ *  Description: Custom JS code used in Tables Datatables Page
+ */
+
+// DataTables, for more examples you can check out https://www.datatables.net/
+class pageTableDatatables {
+	/*
+	 * Init DataTables functionality
+	 *
+	 */
+	static initDataTables() {
+		// Override a few default classes
+		jQuery.extend(true, DataTable.ext.classes, {
+			search: {
+				input: "form-control",
+			},
+			length: {
+				select: "form-select",
+			},
+		});
+
+		// Override a few defaults
+		jQuery.extend(true, DataTable.defaults, {
+			language: {
+				lengthMenu: "_MENU_",
+				search: "_INPUT_",
+				searchPlaceholder: "Buscar..",
+				info: "Página <strong>_PAGE_</strong> de <strong>_PAGES_</strong>",
+				paginate: {
+					first: '<i class="fa fa-angle-double-left"></i>',
+					previous: '<i class="fa fa-angle-left"></i>',
+					next: '<i class="fa fa-angle-right"></i>',
+					last: '<i class="fa fa-angle-double-right"></i>',
+				},
+				zeroRecords: "No se encontraron registros",
+				infoEmpty: "No se encontraron registros",
+			},
+		});
+
+		// Override buttons default classes
+		jQuery.extend(true, DataTable.Buttons.defaults, {
+			dom: {
+				button: {
+					className: "btn btn-sm btn-primary",
+				},
+			},
+		});
+
+		// Init full DataTable
+		jQuery(".js-dataTable-full").DataTable({
+			pagingType: "simple_numbers",
+			layout: {
+				topStart: {
+					pageLength: {
+						menu: [30, 60, 100],
+					},
+				},
+			},
+			pageLength: 30,
+			autoWidth: false,
+		});
+
+		// Init DataTable with Buttons
+		jQuery(".js-dataTable-buttons").DataTable({
+			pagingType: "simple_numbers",
+			layout: {
+				topStart: [
+					{
+						buttons: ["copy", "excel", "csv"],
+					},
+					{
+						pageLength: {
+							menu: [30, 60, 100],
+						},
+					},
+				],
+			},
+			pageLength: 30,
+			autoWidth: false,
+		});
+
+		// Init full extra DataTable
+		jQuery(".js-dataTable-full-pagination").DataTable({
+			layout: {
+				topStart: {
+					pageLength: {
+						menu: [30, 60, 100],
+					},
+				},
+			},
+			pageLength: 30,
+			autoWidth: false,
+		});
+
+		// Init simple DataTable
+		jQuery(".js-dataTable-simple").DataTable({
+			pagingType: "simple_numbers",
+			pageLength: 30,
+			layout: {
+				topStart: null,
+				topEnd: null,
+			},
+			autoWidth: false,
+		});
+
+		// Init responsive DataTable
+		jQuery(".js-dataTable-responsive").DataTable({
+			pagingType: "simple_numbers",
+			layout: {
+				topStart: {
+					pageLength: {
+						menu: [30, 60, 100],
+					},
+				},
+			},
+			pageLength: 30,
+			autoWidth: false,
+			responsive: true,
+		});
+
+		// Init DataTable with Buttons and Responsive
+		jQuery(".js-dataTable-full-export").DataTable({
+			pagingType: "simple_numbers",
+			layout: {
+				topStart: [
+					{
+						buttons: ["excel"],
+					},
+					{
+						pageLength: {
+							menu: [30, 60, 100],
+						},
+					},
+				],
+			},
+			pageLength: 30,
+			autoWidth: false,
+			responsive: true,
+		});
+	}
+
+	/*
+	 * Init functionality
+	 *
+	 */
+	static init() {
+		this.initDataTables();
+	}
+}
+
+// Initialize when page loads
+Codebase.onLoad(() => pageTableDatatables.init());
