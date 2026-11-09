@@ -36,3 +36,4 @@ Application/public/storage
 Application/storage/app/backups/*
 Application/storage/app/public/*
 !Application/storage/app/public/.gitignore
+
