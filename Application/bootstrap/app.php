@@ -12,7 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckInductionStatus::class,
+        ]);
+
+        $middleware->alias([
+            'induction.completed' => \App\Http\Middleware\CheckInductionStatus::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

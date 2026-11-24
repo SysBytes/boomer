@@ -13,7 +13,9 @@ class UserInductionEvidence extends Model
 
     protected $fillable = [
         'user_id',
+        'content_id',
         'evidence_photo_path',
+        'signature_path',
         'ip_address',
         'accepted_at',
     ];
@@ -28,6 +30,11 @@ class UserInductionEvidence extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function content()
+    {
+        return $this->belongsTo(CorporateContent::class, 'content_id');
     }
 }
 

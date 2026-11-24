@@ -2,6 +2,7 @@
     $hasOld = count(session()->getOldInput()) > 0;
     $source = old('source', isset($content) && $content->is_external ? 'url' : 'file');
     $isMandatory = $hasOld ? old('is_mandatory') !== null : ($content->is_mandatory ?? true);
+    $hasWatermark = $hasOld ? old('has_watermark') !== null : ($content->has_watermark ?? false);
     $isActive = $hasOld ? old('is_active') !== null : ($content->is_active ?? true);
     $defaultTargetType = isset($content) && $content->target_user_id ? 'user' : 'roles';
     $targetType = old('target_type', $defaultTargetType);
@@ -136,6 +137,10 @@
                 <input type="checkbox" class="form-check-input" id="is_mandatory" name="is_mandatory" value="1" {{ $isMandatory ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_mandatory">Obligatorio (el usuario deberá verlo al iniciar sesión)</label>
             </div>
+            <div class="form-check form-switch py-2" id="watermark_group">
+                <input type="checkbox" class="form-check-input" id="has_watermark" name="has_watermark" value="1" {{ $hasWatermark ? 'checked' : '' }}>
+                <label class="form-check-label" for="has_watermark">Mostrar marca de agua (solo documentos PDF)</label>
+            </div>
             <div class="form-check form-switch py-2">
                 <input type="checkbox" class="form-check-input" id="is_active" name="is_active" value="1" {{ $isActive ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_active">Activo</label>
@@ -162,6 +167,8 @@
         const fileGroup = document.getElementById('file_group');
         const urlGroup = document.getElementById('url_group');
         const fileInput = document.getElementById('file');
+        const watermarkGroup = document.getElementById('watermark_group');
+        const watermarkInput = document.getElementById('has_watermark');
 
         function refreshSource() {
             // Los enlaces externos solo aplican a video
@@ -169,6 +176,13 @@
             urlWrapper.style.display = isPdf ? 'none' : '';
             if (isPdf && sourceUrl.checked) {
                 sourceFile.checked = true;
+            }
+
+            if (watermarkGroup) {
+                watermarkGroup.style.display = isPdf ? '' : 'none';
+            }
+            if (!isPdf && watermarkInput) {
+                watermarkInput.checked = false;
             }
 
             const useUrl = sourceUrl.checked;

@@ -42,7 +42,15 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth']], function () {
 
     // Biblioteca de contenidos corporativos del usuario
     Route::get('corporate-contents', [App\Http\Controllers\UserContentLibraryController::class, 'index'])->name('dashboard.corporate-contents.index');
+    Route::get('corporate-contents/{content}/verify', [App\Http\Controllers\UserContentLibraryController::class, 'showVerification'])->name('dashboard.corporate-contents.verify');
+    Route::post('corporate-contents/{content}/heartbeat', [App\Http\Controllers\UserContentLibraryController::class, 'heartbeat'])->name('dashboard.corporate-contents.heartbeat');
+    Route::post('corporate-contents/{content}/verify', [App\Http\Controllers\UserContentLibraryController::class, 'confirmVerification'])->name('dashboard.corporate-contents.verify.store');
     Route::get('corporate-contents/{content}/view', [App\Http\Controllers\UserContentLibraryController::class, 'viewFile'])->name('dashboard.corporate-contents.view');
+    Route::post('corporate-contents/{content}/token', [App\Http\Controllers\UserContentLibraryController::class, 'issueToken'])->name('dashboard.corporate-contents.token');
+    Route::post('corporate-contents/{content}/viewed', [App\Http\Controllers\UserContentLibraryController::class, 'markViewed'])->name('dashboard.corporate-contents.viewed');
+    Route::get('corporate-contents/{content}/stream/{token}', [App\Http\Controllers\UserContentLibraryController::class, 'stream'])
+        ->where('token', '[a-f0-9]{64}')
+        ->name('dashboard.corporate-contents.stream');
 
     Route::middleware([\App\Http\Middleware\CheckNotAssistant::class])->group(function () {
         Route::get('requisition/request', [App\Http\Controllers\RequisitionController::class, 'createMaterialRequest'])->name('requisitions.request');
@@ -61,6 +69,14 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth']], function () {
     Route::post('staff-checkin', [App\Http\Controllers\StaffCheckInController::class, 'checkIn'])->name('staff.checkin.store');
     Route::post('staff-checkout', [App\Http\Controllers\StaffCheckInController::class, 'checkOut'])->name('staff.checkin.checkout');
 
+});
+
+// Flujo de Inducción Corporativa Obligatoria del Usuario
+Route::middleware(['auth'])->prefix('induction')->name('induction.')->group(function () {
+    Route::get('/', [App\Http\Controllers\InductionController::class, 'index'])->name('index');
+    Route::post('contents/{content}/heartbeat', [App\Http\Controllers\InductionController::class, 'heartbeat'])->name('heartbeat');
+    Route::post('contents/{content}/complete', [App\Http\Controllers\InductionController::class, 'completeContent'])->name('complete');
+    Route::post('certify', [App\Http\Controllers\InductionController::class, 'certify'])->name('certify');
 });
 
 Route::group(['prefix' => 'backoffice', 'middleware' => ['auth', \App\Http\Middleware\CheckBackofficeRole::class]], function () {
@@ -125,6 +141,17 @@ Route::group(['prefix' => 'backoffice', 'middleware' => ['auth', \App\Http\Middl
             ->parameters(['subcategories' => 'subcategory'])
             ->except(['show']);
         Route::post('contents/{content}/toggle', [App\Http\Controllers\CorporateContentController::class, 'toggle'])->name('contents.toggle');
+        Route::get('contents/{content}/viewers', [App\Http\Controllers\CorporateContentController::class, 'viewers'])->name('contents.viewers');
+        Route::delete('contents/{content}/viewers/{user}', [App\Http\Controllers\CorporateContentController::class, 'resetUserView'])->name('contents.viewers.reset');
+        Route::get('evidences/{evidence}/file/{kind}', [App\Http\Controllers\CorporateContentController::class, 'evidenceFile'])
+            ->whereIn('kind', ['photo', 'signature'])
+            ->name('evidences.file');
+        // Auditoría Gerencial de Inducción (estrictamente solo lectura)
+        Route::get('audit', [App\Http\Controllers\InductionAuditController::class, 'index'])->name('audit.index');
+        Route::get('audit/evidences/{evidence}/{kind}', [App\Http\Controllers\InductionAuditController::class, 'evidenceFile'])
+            ->whereIn('kind', ['photo', 'signature'])
+            ->name('audit.evidence_file');
+        Route::get('audit/{user}', [App\Http\Controllers\InductionAuditController::class, 'show'])->name('audit.show');
         Route::resource('contents', App\Http\Controllers\CorporateContentController::class)
             ->parameters(['contents' => 'content'])
             ->except(['show']);

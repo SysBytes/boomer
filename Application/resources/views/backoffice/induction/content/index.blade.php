@@ -40,6 +40,7 @@
                         <th class="text-center">Origen</th>
                         <th>Destinatario</th>
                         <th class="text-center">Tiempo (seg)</th>
+                        <th class="text-center">Visualización</th>
                         <th class="text-center">Obligatorio</th>
                         <th class="text-center">Estatus</th>
                         <th class="text-center" style="width: 14%;"> - </th>
@@ -53,6 +54,9 @@
                             <td class="text-center">
                                 @if($content->type === 'pdf')
                                     <span class="badge bg-danger"><i class="fa fa-file-pdf"></i> PDF</span>
+                                    @if($content->has_watermark)
+                                        <span class="badge bg-dark ms-1" title="Con marca de agua"><i class="fa fa-stamp"></i></span>
+                                    @endif
                                 @else
                                     <span class="badge bg-info"><i class="fa fa-video"></i> VIDEO</span>
                                 @endif
@@ -83,6 +87,12 @@
                                 @endif
                             </td>
                             <td class="text-center">{{ $content->required_time_seconds }}</td>
+                            <td class="text-center" data-order="{{ $content->viewed_count }}">
+                                <a href="{{ route('induction.contents.viewers', $content->id) }}" class="text-decoration-none" title="Ver detalle de visualización">
+                                    <span class="badge bg-success">{{ $content->viewed_count }} vistos</span>
+                                    <span class="badge bg-warning text-dark">{{ max($content->recipients_count - $content->viewed_count, 0) }} pendientes</span>
+                                </a>
+                            </td>
                             <td class="text-center">
                                 @if($content->is_mandatory)
                                     <span class="badge bg-primary">SÍ</span>
@@ -100,6 +110,10 @@
                             <td class="text-center">
                                 <a href="{{ route('induction.contents.edit', $content->id) }}" class="btn btn-sm btn-secondary" title="Editar">
                                     <i class="fas fa-edit"></i>
+                                </a>
+
+                                <a href="{{ route('induction.contents.viewers', $content->id) }}" class="btn btn-sm btn-info" title="Quién vio / pendientes">
+                                    <i class="fas fa-users"></i>
                                 </a>
 
                                 <form action="{{ route('induction.contents.destroy', $content->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este contenido? Si ya tiene progreso de usuarios, será inactivado en su lugar.')">

@@ -207,6 +207,12 @@
                                 <span class="nav-main-link-name">Usuarios por Proyecto</span>
                             </a>
                         </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link {{ request()->routeIs('induction.audit.*') ? ' active' : '' }}" href="{{ route('induction.audit.index') }}">
+                                <i class="nav-main-link-icon fa-solid fa-clipboard-check"></i>
+                                <span class="nav-main-link-name">Auditoría de Inducción</span>
+                            </a>
+                        </li>
                     @endif
 
                     <li class="nav-main-heading">Tablas</li>

@@ -6,13 +6,15 @@ use App\Models\CorporateContent;
 use App\Models\DocumentSubcategory;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserContentProgress;
+use App\Models\UserInductionEvidence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class CorporateContentController extends Controller
 {
     /** Disco donde se almacenan los archivos físicos (PDF / video local). */
-    private const DISK = 'public';
+    private const DISK = 'local';
 
     /** Carpeta dentro del disco. */
     private const FOLDER = 'induction';
@@ -29,11 +31,178 @@ class CorporateContentController extends Controller
 
     public function index()
     {
+        $isDeveloper = auth()->user()->hasRole('developer');
+
         $contents = CorporateContent::with(['subcategory.category', 'roles', 'targetUser'])
             ->orderByDesc('id')
             ->get();
 
+        // Conteo de visualizados vs. habilitados por contenido
+        $contents->each(function (CorporateContent $content) use ($isDeveloper) {
+            $recipientIds = $content->recipientUsers($isDeveloper)->pluck('users.id');
+
+            $viewedCount = $content->userProgress()
+                ->where('status', 'completed')
+                ->whereIn('user_id', $recipientIds)
+                ->count();
+
+            $content->setAttribute('recipients_count', $recipientIds->count());
+            $content->setAttribute('viewed_count', $viewedCount);
+        });
+
         return view('backoffice.induction.content.index', compact('contents'));
+    }
+
+    /**
+     * Detalle de quiénes han visto y quiénes faltan por ver un contenido.
+     */
+    public function viewers(CorporateContent $content)
+    {
+        $isDeveloper = auth()->user()->hasRole('developer');
+
+        $recipients = $content->recipientUsers($isDeveloper)
+            ->with('roles')
+            ->orderBy('name')
+            ->get();
+
+        $progress = $content->userProgress()
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->get()
+            ->keyBy('user_id');
+
+        $viewedUsers = $recipients->filter(fn ($user) => $progress->has($user->id));
+        $viewedUserIds = $viewedUsers->pluck('id')->all();
+
+        $contentEvidences = empty($viewedUserIds)
+            ? collect()
+            : UserInductionEvidence::whereIn('user_id', $viewedUserIds)
+                ->where('content_id', $content->id)
+                ->orderByDesc('accepted_at')
+                ->orderByDesc('id')
+                ->get()
+                ->groupBy('user_id')
+                ->map->first();
+
+        $generalEvidences = ($content->is_mandatory && !empty($viewedUserIds))
+            ? UserInductionEvidence::whereIn('user_id', $viewedUserIds)
+                ->whereNull('content_id')
+                ->orderByDesc('accepted_at')
+                ->orderByDesc('id')
+                ->get()
+                ->groupBy('user_id')
+                ->map->first()
+            : collect();
+
+        $viewed = $viewedUsers
+            ->map(fn ($user) => (object) [
+                'user' => $user,
+                'viewed_at' => $progress[$user->id]->completed_at,
+                'evidence' => $contentEvidences->get($user->id) ?? $generalEvidences->get($user->id),
+            ])
+            ->sortByDesc('viewed_at')
+            ->values();
+
+        $pending = $recipients
+            ->reject(fn ($user) => $progress->has($user->id))
+            ->values();
+
+        $content->load(['subcategory.category', 'roles', 'targetUser']);
+
+        return view('backoffice.induction.content.viewers', compact('content', 'viewed', 'pending', 'recipients'));
+    }
+
+    /**
+     * Sirve de forma privada la fotografía selfie o firma digital de una confirmación de lectura.
+     */
+    public function evidenceFile(UserInductionEvidence $evidence, string $kind)
+    {
+        $evidence->loadMissing('user.roles');
+
+        if (!auth()->user()->hasRole('developer') && $evidence->user && $evidence->user->hasRole('developer')) {
+            abort(403, 'No autorizado.');
+        }
+
+        $path = $kind === 'photo' ? $evidence->evidence_photo_path : $evidence->signature_path;
+        $disk = null;
+
+        if ($path) {
+            foreach (['local', 'public'] as $candidate) {
+                if (Storage::disk($candidate)->exists($path)) {
+                    $disk = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if (!$disk) {
+            abort(404, 'Archivo de evidencia no encontrado.');
+        }
+
+        return response()->file(Storage::disk($disk)->path($path), [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, private, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'DENY',
+        ]);
+    }
+
+    /**
+     * Elimina el registro completo de visualización y evidencias (selfie y firma) de un usuario
+     * para este contenido y, si es obligatorio y activo, reabre su inducción pendiente.
+     */
+    public function resetUserView(CorporateContent $content, User $user)
+    {
+        if (!auth()->user()->hasRole('developer') && $user->hasRole('developer')) {
+            abort(403, 'No autorizado.');
+        }
+
+        $deleted = UserContentProgress::where('content_id', $content->id)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        if ($deleted === 0) {
+            return redirect()
+                ->route('induction.contents.viewers', $content->id)
+                ->with('error', 'No existe un registro de visualización para este usuario en este contenido.');
+        }
+
+        // Eliminar evidencias asociadas (y sus archivos físicos de selfie y firma)
+        $evidencesQuery = UserInductionEvidence::where('user_id', $user->id)
+            ->where(function ($q) use ($content) {
+                $q->where('content_id', $content->id);
+                if ($content->is_mandatory) {
+                    $q->orWhereNull('content_id');
+                }
+            });
+
+        $evidences = $evidencesQuery->get();
+        foreach ($evidences as $evidence) {
+            $this->deleteStoredFile($evidence->evidence_photo_path);
+            $this->deleteStoredFile($evidence->signature_path);
+            $evidence->delete();
+        }
+
+        $reopenedInduction = false;
+        if (
+            $content->is_mandatory
+            && $content->is_active
+            && $user->induction_status === 'completed'
+            && !$user->hasAnyRole(['admin', 'developer'])
+            && CorporateContent::visibleTo($user)->whereKey($content->id)->exists()
+        ) {
+            $user->update(['induction_status' => 'pending']);
+            $reopenedInduction = true;
+        }
+
+        $displayName = ucwords(mb_strtolower($user->name));
+        $message = $reopenedInduction
+            ? "Se eliminó la visualización y evidencia de {$displayName}; su inducción pasó nuevamente a estado pendiente para obligarlo a ver este contenido."
+            : "Se eliminó la visualización y evidencia de {$displayName}. El contenido volvió a estado pendiente para este usuario.";
+
+        return redirect()
+            ->route('induction.contents.viewers', $content->id)
+            ->with('success', $message);
     }
 
     public function create()
@@ -228,6 +397,7 @@ class CorporateContentController extends Controller
             'target_user_id' => $isUserTarget ? $data['target_user_id'] : null,
             'target_role_id' => (!$isUserTarget && !empty($data['roles'])) ? $data['roles'][0] : null,
             'is_mandatory' => $request->boolean('is_mandatory'),
+            'has_watermark' => $data['type'] === 'pdf' && $request->boolean('has_watermark'),
             'is_active' => $request->boolean('is_active'),
         ];
 
@@ -256,8 +426,14 @@ class CorporateContentController extends Controller
 
     private function deleteStoredFile(?string $path): void
     {
-        if ($path && Storage::disk(self::DISK)->exists($path)) {
-            Storage::disk(self::DISK)->delete($path);
+        if (!$path) {
+            return;
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                Storage::disk($disk)->delete($path);
+            }
         }
     }
 }
